@@ -98,6 +98,18 @@ describe("POST /api/cron/gmail-sync", () => {
       const res = await POST(req);
       expect(res.status).toBe(401);
     });
+
+    it("CRON_SECRET が未設定の場合は 401 を返す（安全に失敗）", async () => {
+      const original = process.env.CRON_SECRET;
+      delete process.env.CRON_SECRET;
+      const req = new NextRequest("http://localhost:3000/api/cron/gmail-sync", {
+        method: "POST",
+        headers: { Authorization: "Bearer any-value" },
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(401);
+      process.env.CRON_SECRET = original;
+    });
   });
 
   describe("重複防止", () => {

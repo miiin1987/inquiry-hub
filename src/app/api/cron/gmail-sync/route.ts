@@ -3,8 +3,12 @@ import { createServerClient } from "@/lib/supabase/server";
 import { fetchNewEmails, FetchedEmail } from "@/lib/gmail/fetch";
 
 export async function POST(request: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
