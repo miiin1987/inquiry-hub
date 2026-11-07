@@ -4,7 +4,9 @@ export function verifyLineSignature(
   body: string,
   signature: string
 ): boolean {
-  const channelSecret = process.env.LINE_CHANNEL_SECRET!;
+  const channelSecret = process.env.LINE_CHANNEL_SECRET;
+  // 未設定時は安全失敗（呼び出し元が 401 を返す）
+  if (!channelSecret) return false;
   const hash = createHmac("sha256", channelSecret)
     .update(body)
     .digest("base64");

@@ -85,6 +85,21 @@ describe("POST /api/webhooks/line", () => {
       const res = await POST(makeRequest(body, "wrong-secret"));
       expect(res.status).toBe(401);
     });
+
+    it("LINE_CHANNEL_SECRET 未設定なら 500 ではなく 401 を返す（安全に失敗）", async () => {
+      const original = process.env.LINE_CHANNEL_SECRET;
+      delete process.env.LINE_CHANNEL_SECRET;
+      const body = makeLineBody([makeTextEvent("msg-1", "テスト")]);
+      // 署名は任意（未設定なので必ず401）
+      const req = new NextRequest("http://localhost:3000/api/webhooks/line", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-line-signature": "dummy" },
+        body,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(401);
+      process.env.LINE_CHANNEL_SECRET = original;
+    });
   });
 
   describe("正常処理", () => {
